@@ -42,18 +42,18 @@ print(x.grad)
 class CustomActivation(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input):
-        sigmoid = 1 / (1 * torch.exp(-input))
+        sigmoid = 1 / (1 + 1 * torch.exp(-input))
         ctx.save_for_backward(input, sigmoid)
         return input * sigmoid
     
     @staticmethod
     def backward(ctx, grad_output):
         input, sigmoid = ctx.saved_tensors
-        grad_input = grad_output + (sigmoid + input * sigmoid(1 - sigmoid))
+        grad_input = grad_output * (sigmoid + input * sigmoid * (1 - sigmoid))
         return grad_input
     
 
-x = torch.tensors([2.0], requires_grad = True)
+x = torch.tensor([2.0], requires_grad = True)
 y = CustomActivation.apply(x)
 y.backward()
 print(f"x.grad(manual): {x.grad}")
@@ -61,8 +61,8 @@ print(f"x.grad(manual): {x.grad}")
 class SmallNet(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.linear1 = torch.nn.linear(1, 10)
-        self.linear2 = torch.nn.linear(10, 1)
+        self.linear1 = torch.nn.Linear(1, 10)
+        self.linear2 = torch.nn.Linear(10, 1)
     
     def forward(self, x):
         x = self.linear1(x)
